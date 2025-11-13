@@ -507,6 +507,7 @@ export default {
               if (card) card.location = player.name;
             }
           });
+          
 
           // Deal to revealed area (just mark location)
           for (let i = 0; i < 8; i++) {
