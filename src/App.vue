@@ -498,7 +498,7 @@ export default {
           console.log("before shuffle")
 
           // Shuffle
-          // this.deck.sort(() => Math.random() - 0.5);
+          this.deck.sort(() => Math.random() - 0.5);
 
           // Deal to players (just mark location)
           this.players.forEach(player => {
