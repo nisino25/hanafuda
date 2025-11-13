@@ -242,8 +242,8 @@ export default {
   },
   data() {
     return {
-      // developingMode: false,
-      developingMode: true,
+      developingMode: false,
+      // developingMode: true,
 
       defaultNumber: 2,
       maxPlayerNumber: 6,
@@ -507,7 +507,7 @@ export default {
               if (card) card.location = player.name;
             }
           });
-          
+
 
           // Deal to revealed area (just mark location)
           for (let i = 0; i < 8; i++) {
