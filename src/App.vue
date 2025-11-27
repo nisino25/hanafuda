@@ -3,6 +3,28 @@
     <div class="inner">
 
       <div v-if="currentPage === 'before'">
+        <div ref="scrollWrapper" class="w-full h-[100vh] overflow-hidden relative">
+            <div ref="scrollArea" class="absolute top-0 w-full">
+                <div class="grid grid-cols-4 gap-1">
+                    <div
+                        v-for="card in duplicatedDeck"
+                        :key="card.id + '-' + card.dup"
+                        class="relative flex justify-center pointer-events-none"
+                    >
+                        <img
+                            :src="`./img/hanafuda-img/${card.id}.webp`"
+                            alt=""
+                            class="w-[120px] aspect-[2/3] object-cover select-none"
+                            draggable="false"
+                        />
+                        <div class="absolute inset-0 bg-black/40 pointer-events-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
         <div class="bg-slate-50 text-slate-800 p-4 rounded-lg shadow-md w-[85%] max-w-[400px] m-auto absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
 
           <div v-if="!roomOption">
@@ -81,7 +103,12 @@
                       >
                         <div class="card-inner">
                           <div class="card-front">
-                            <span>{{ card?.number }}</span>
+                            <img
+                              :src="`./img/hanafuda-img/${card.id}.webp`"
+                              alt=""
+                              class="object-cover select-none"
+                              draggable="false"
+                            />
                           </div>
                         </div>
                       </div>
@@ -95,12 +122,6 @@
 
             <div class="public-area p-2">
               <div class="temp-block">
-                <!-- <div class="draw-pile-and-roomInfo">
-  
-                  <div class="draw-pile">
-                    <img src="../public/img/card-back-new.jpg">
-                  </div>
-                </div> -->
                 <div class="revealed-container">
                   <div 
                     class="draw-pile gameCard"
@@ -108,7 +129,6 @@
                     @click="drawPile()"
                     :class="{ 'readyToDraw': canIDraw }"
                     >
-                    <img src="../public/img/card-back-new.jpg">
                     <div
                         class="player-card-num-container absolute right-0 bottom-0 bg-black rounded-tl-full aspect-square w-[55%] flex items-center justify-center"
                     >
@@ -122,11 +142,13 @@
                     >
                     <div class="card-inner">
                       <div class="card-front">
-                        <span>{{ flippedDrawPile?.number }}</span>  
+                        <img
+                          :src="`./img/hanafuda-img/${flippedDrawPile.id}.webp`"
+                          alt=""
+                          class="object-cover select-none"
+                          draggable="false"
+                        />
                     </div>  
-                      <div class="card-back">
-                        <img src="../public/img/card-back-new.jpg">
-                      </div>
                     </div>
                   </div>
                   <template v-for="(card) in revealedCards" :key="card.id">
@@ -143,11 +165,12 @@
 
                       <div class="card-inner">
                         <div class="card-front">
-                          
-                          <span>{{ card?.number }}</span>
-                        </div>
-                        <div class="card-back">
-                          <img src="../public/img/card-back-new.jpg">
+                          <img
+                              :src="`./img/hanafuda-img/${card.id}.webp`"
+                              alt=""
+                              class="object-cover select-none"
+                              draggable="false"
+                          />
                         </div>
                       </div>
 
@@ -187,7 +210,12 @@
                       >
                         <div class="card-inner">
                           <div class="card-front">
-                            <span>{{ card?.number }}</span>
+                            <img
+                              :src="`./img/hanafuda-img/${card.id}.webp`"
+                              alt=""
+                              class="object-cover select-none"
+                              draggable="false"
+                            />
                           </div>
                         </div>
                       </div>
@@ -210,10 +238,12 @@
                   >
                     <div class="card-inner">
                       <div class="card-front">
-                        <span>{{ card?.number }}</span>
-                      </div>
-                      <div class="card-back">
-                        <img src="../public/img/card-back-new.jpg">
+                        <img
+                          :src="`./img/hanafuda-img/${card.id}.webp`"
+                          alt=""
+                          class="object-cover select-none"
+                          draggable="false"
+                        />
                       </div>
                     </div>
                   </div>
@@ -242,8 +272,8 @@ export default {
   },
   data() {
     return {
-      developingMode: false,
-      // developingMode: true,
+      // developingMode: false,
+      developingMode: true,
 
       defaultNumber: 2,
       maxPlayerNumber: 6,
@@ -289,6 +319,11 @@ export default {
 
       canIDraw: false,
       finishedMove: false,
+
+      // -----
+      duplicatedDeck: [], 
+      speed: .25,
+      intervalId: null
 
     };
   },
@@ -467,55 +502,56 @@ export default {
     },
 
     // =======================================================
+
+    preInitalDeck(){
+      // Build full deck (1..12, 4 copies each)
+      this.deck = [];
+      // let id = 1;
+
+      for (let num = 1; num <= 12; num++) {
+        for (let i = 1; i < 5; i++) {
+          let tmepCard = {
+            id: num * 10 + i,
+            number: num,
+            location: 'publicPile', // everything starts public
+            isCaptured: false,
+          }
+
+          if([11,31,81,111,121].includes(tmepCard.id)) tmepCard.hikari = true;
+
+          if([21,41,51,61,71,82,91,101,112].includes(tmepCard.id)) tmepCard.tane = true;
+
+          if([12,22,32,42,52,62,72,92,102,113].includes(tmepCard.id)) tmepCard.tanzaku = true;
+
+
+
+          this.deck.push(tmepCard);
+        }
+      }
+
+      console.log(this.deck)
+    },
     
     initializeDeck() {
-          // Build full deck (1..12, 4 copies each)
-          this.deck = [];
-          // let id = 1;
+      // Shuffle
+      this.deck.sort(() => Math.random() - 0.5);
 
-          for (let num = 1; num <= 12; num++) {
-            for (let i = 1; i < 5; i++) {
-              let tmepCard = {
-                id: num * 10 + i,
-                number: num,
-                location: 'publicPile', // everything starts public
-                isCaptured: false,
-              }
-
-              if([11,31,81,111,121].includes(tmepCard.id)) tmepCard.hikari = true;
-
-              if([21,41,51,61,71,82,91,101,112].includes(tmepCard.id)) tmepCard.tane = true;
-
-              if([12,22,32,42,52,62,72,92,102,113].includes(tmepCard.id)) tmepCard.tanzaku = true;
+      // Deal to players (just mark location)
+      this.players.forEach(player => {
+        for (let i = 0; i < 8; i++) {
+          const card = this.deck.find(c => c.location === 'publicPile');
+          if (card) card.location = player.name;
+        }
+      });
 
 
-
-              this.deck.push(tmepCard);
-            }
-          }
-
-          console.log(this.deck)
-          console.log("before shuffle")
-
-          // Shuffle
-          this.deck.sort(() => Math.random() - 0.5);
-
-          // Deal to players (just mark location)
-          this.players.forEach(player => {
-            for (let i = 0; i < 8; i++) {
-              const card = this.deck.find(c => c.location === 'publicPile');
-              if (card) card.location = player.name;
-            }
-          });
-
-
-          // Deal to revealed area (just mark location)
-          for (let i = 0; i < 8; i++) {
-            const card = this.deck.find(c => c.location === 'publicPile');
-            if (card) {
-              card.location = 'revealedArea';
-            }
-          }
+      // Deal to revealed area (just mark location)
+      for (let i = 0; i < 8; i++) {
+        const card = this.deck.find(c => c.location === 'publicPile');
+        if (card) {
+          card.location = 'revealedArea';
+        }
+      }
     },
 
     getOtherPlayers() {
@@ -855,6 +891,7 @@ export default {
       await this.updateAudio('card-shuffle')
       
       this.deck = []
+      this.preInitalDeck()
       await this.initializeDeck()
 
       this.previousGameResults = this.gameResults
@@ -1005,6 +1042,19 @@ export default {
       this.updatingData();
 
     },  
+
+    startAutoScroll() {
+        const el = this.$refs.scrollArea
+        // const wrapper = this.$refs.scrollWrapper
+        this.intervalId = setInterval(() => {
+            el.style.top = (parseFloat(el.style.top || '0') - this.speed) + 'px'
+
+            // if scrolled past half → reset
+            if (Math.abs(parseFloat(el.style.top)) >= el.scrollHeight / 2) {
+                el.style.top = '0px'
+            }
+        }, 10)
+    }
     
 
 
@@ -1030,8 +1080,18 @@ export default {
     this.lastSubmitBy = null
     this.currentPlayerIndex = 0
 
+    this.preInitalDeck()
+    this.duplicatedDeck = this.deck.concat(
+        this.deck.map(c => ({ ...c, dup: true }))
+    )
+    // this.startAutoScroll()
+    this.startAutoScroll()
+
     this.username = this.getRandomName();
   },
+   beforeUnmount() {
+      clearInterval(this.intervalId)
+   },  
 };
 </script>
 
@@ -1062,6 +1122,7 @@ export default {
   html, body {
     overflow: hidden;
     height: 100%;
+    
     margin: 0;
     padding: 0;
 
@@ -1256,8 +1317,11 @@ export default {
   }
 
   .draw-pile{
-    border: 3px solid #111827;
-    border-radius: 3px;
+    background: url(/public/img/card-back.webp) center/cover no-repeat, linear-gradient(45deg, gray, #111) !important;
+    background-size:
+    80% auto,   /* image = 80% width */
+    cover;      
+    border: 2px solid black;
   }
 
   /* ---------------------------------------- */
@@ -1270,7 +1334,7 @@ export default {
     flex-wrap: wrap;
     /* grid-template-columns: repeat(2, 1fr); */
     /* justify-content: space-between; */
-    gap: 4.5px;
+    gap: 4.4px;
   }
 
   .public-area{
@@ -1322,8 +1386,8 @@ export default {
   .gameCard{
     display: block;
     position: relative;
-    border: 3px solid #111827;
-    border-radius: 5px;
+    /* border: 2px solid #111827; */
+    /* border-radius: 7px; */
     /* position: absolute; */
 
     overflow: hidden;
@@ -1332,10 +1396,10 @@ export default {
     transition: all .3s ease-in-out;
 
     width: 50px;
-    aspect-ratio: 5 / 7;
+    aspect-ratio: 150 / 242;
     /* height: 90px; */
 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
   }
 
   .selected-card{
@@ -1383,7 +1447,7 @@ export default {
     width: 100%;
     height: 100%;
     position: absolute;
-    backface-visibility: hidden;
+    /* backface-visibility: hidden; */
     /* border: 1px solid #ccc; */
     box-sizing: border-box;
     
